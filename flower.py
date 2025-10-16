@@ -25,7 +25,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "-1"  # Disable GPU for Render (no CUDA dri
 @st.cache_resource
 def load_model():
     # Replace 'flower_model.h5' with your actual model path
-    model = tf.keras.models.load_model("flower_model.h5")
+    model = tf.keras.models.load_model("my_model.keras")
     return model
 
 model = load_model()
@@ -79,4 +79,5 @@ if uploaded_file is not None:
 # ----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit + TensorFlow • © 2025 Flower Vision AI")
+
 
