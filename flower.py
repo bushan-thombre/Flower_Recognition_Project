@@ -14,70 +14,68 @@ st.set_page_config(
 )
 
 # ----------------------------
-# Hide Streamlit Warnings
+# Suppress TensorFlow warnings
 # ----------------------------
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Suppress TensorFlow info logs
-os.environ["CUDA_VISIBLE_DEVICES"] = "-1"  # Disable GPU for Render (no CUDA drivers)
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
 # ----------------------------
 # Load Model (once)
 # ----------------------------
 @st.cache_resource
 def load_model():
-    # Replace 'flower_model.h5' with your actual model path
-    model = tf.keras.models.load_model("my_model.keras")
+    # Replace 'flower_model.h5' with your actual model
+    model = tf.keras.models.load_model("flower_model.h5")
     return model
 
 model = load_model()
 
 # ----------------------------
-# Class Labels (adjust to your dataset)
+# Class labels
 # ----------------------------
 CLASS_NAMES = ["Daisy", "Dandelion", "Rose", "Sunflower", "Tulip"]
 
 # ----------------------------
-# Streamlit Title & Description
-# ----------------------------
-st.title("🌼 Flower Image Classifier")
-st.markdown(
-    "Upload a photo of a flower, and this app will predict which type it is using a TensorFlow model."
-)
-
-# ----------------------------
-# File Uploader (with unique key)
+# File uploader
 # ----------------------------
 uploaded_file = st.file_uploader(
     "Choose a flower image",
     type=["jpg", "jpeg", "png"],
-    key="flower_upload"  # ✅ unique key avoids duplicate ID errors
+    key="flower_upload"
 )
 
 # ----------------------------
-# Prediction Logic
+# Prediction function
+# ----------------------------
+def predict_image(img, model):
+    """
+    Predict a flower class from a PIL image
+    without changing its original size.
+    """
+    img_array = tf.keras.utils.img_to_array(img)
+    img_array = tf.expand_dims(img_array, 0)  # add batch dimension
+
+    # Check if model expects flat input
+    input_shape = model.input_shape
+    if len(input_shape) == 2:  # Dense expects flat vector
+        img_array = tf.reshape(img_array, [1, -1])
+
+    # Predict
+    predictions = model.predict(img_array)
+    return tf.nn.softmax(predictions[0])
+
+# ----------------------------
+# Run prediction
 # ----------------------------
 if uploaded_file is not None:
-    # Display uploaded image
     image = Image.open(uploaded_file)
     st.image(image, caption="Uploaded Image", use_column_width=True)
 
-    # Preprocess image
-    img = image.resize((180, 180))  # Adjust to your model's input shape
-    img_array = tf.keras.utils.img_to_array(img)
-    img_array = tf.expand_dims(img_array, 0)  # Add batch dimension
+    score = predict_image(image, model)
 
-    # Make prediction
-    predictions = model.predict(img_array)
-    score = tf.nn.softmax(predictions[0])
-
-    # Display result
     st.subheader("🌸 Prediction Result:")
     st.write(f"**Predicted flower:** {CLASS_NAMES[np.argmax(score)]}")
     st.write(f"**Confidence:** {100 * np.max(score):.2f}%")
 
-# ----------------------------
-# Footer
-# ----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit + TensorFlow • © 2025 Flower Vision AI")
-
-
