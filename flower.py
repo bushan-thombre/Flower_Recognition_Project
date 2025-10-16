@@ -1,82 +1,186 @@
 import streamlit as st
-import tensorflow as tf
+from tensorflow.keras.models import load_model
+from tensorflow.keras.preprocessing import image
 import numpy as np
+import tensorflow as tf
 from PIL import Image
-import os
 
-# ----------------------------
-# Streamlit Page Config
-# ----------------------------
-st.set_page_config(
-    page_title="🌸 Flower Classifier",
-    page_icon="🌺",
-    layout="centered"
-)
+# -------------------------------
+# 1. Page Config
+# -------------------------------
+st.set_page_config(page_title="🌼 Flower Classification", layout="centered")
+st.title("🌸 Flower Recognition App")
+st.write("Upload a flower image and let the model predict the type!")
 
-# ----------------------------
-# Suppress TensorFlow warnings
-# ----------------------------
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
-os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
-
-# ----------------------------
-# Load Model (once)
-# ----------------------------
+# -------------------------------
+# 2. Load Trained Model
+# -------------------------------
 @st.cache_resource
-def load_model():
-    # Replace 'flower_model.h5' with your actual model
-    model = tf.keras.models.load_model("my_model.keras")
+def load_flower_model():
+    model = load_model("import streamlit as st
+from tensorflow.keras.models import load_model
+from tensorflow.keras.preprocessing import image
+import numpy as np
+import tensorflow as tf
+from PIL import Image
+
+# -------------------------------
+# 1. Page Config
+# -------------------------------
+st.set_page_config(page_title="🌼 Flower Classification", layout="centered")
+st.title("🌸 Flower Recognition App")
+st.write("Upload a flower image and let the model predict the type!")
+
+# -------------------------------
+# 2. Load Trained Model
+# -------------------------------
+@st.cache_resource
+def load_flower_model():
+    model = load_model("import streamlit as st
+from tensorflow.keras.models import load_model
+from tensorflow.keras.preprocessing import image
+import numpy as np
+import tensorflow as tf
+from PIL import Image
+
+# -------------------------------
+# 1. Page Config
+# -------------------------------
+st.set_page_config(page_title="🌼 Flower Classification", layout="centered")
+st.title("🌸 Flower Recognition App")
+st.write("Upload a flower image and let the model predict the type!")
+
+# -------------------------------
+# 2. Load Trained Model
+# -------------------------------
+@st.cache_resource
+def load_flower_model():
+    model = load_model("my_model.keras")  # your saved Keras model
     return model
 
-model = load_model()
+model = load_flower_model()
 
-# ----------------------------
-# Class labels
-# ----------------------------
-CLASS_NAMES = ["Daisy", "Dandelion", "Rose", "Sunflower", "Tulip"]
+# -------------------------------
+# 3. Define Class Names
+# -------------------------------
+CLASS_NAMES = ['Daisy', 'Dandelion', 'Rose', 'Sunflower', 'Tulip']
 
-# ----------------------------
-# File uploader
-# ----------------------------
-uploaded_file = st.file_uploader(
-    "Choose a flower image",
-    type=["jpg", "jpeg", "png"],
-    key="flower_upload"
-)
+# -------------------------------
+# 4. Prediction Function
+# -------------------------------
+def predict_image(image_file, model):
+    # Load the image with correct target size
+    img = Image.open(image_file).convert("RGB")
+    img = img.resize((224, 224))  # <-- resize to match your model input
+    img_array = image.img_to_array(img)
+    img_array = np.expand_dims(img_array, axis=0)  # Add batch dimension
+    img_array = img_array / 255.0  # Normalize
 
-# ----------------------------
-# Prediction function
-# ----------------------------
-def predict_image(img, model):
-    """
-    Predict a flower class from a PIL image
-    without changing its original size.
-    """
-    img_array = tf.keras.utils.img_to_array(img)
-    img_array = tf.expand_dims(img_array, 0)  # add batch dimension
-
-    # Check if model expects flat input
-    input_shape = model.input_shape
-    if len(input_shape) == 2:  # Dense expects flat vector
-        img_array = tf.reshape(img_array, [1, -1])
-
-    # Predict
+    # Make prediction
     predictions = model.predict(img_array)
-    return tf.nn.softmax(predictions[0])
+    score = tf.nn.softmax(predictions[0])
+    predicted_class = CLASS_NAMES[np.argmax(score)]
+    confidence = 100 * np.max(score)
+    return predicted_class, confidence
 
-# ----------------------------
-# Run prediction
-# ----------------------------
+# -------------------------------
+# 5. Streamlit File Uploader
+# -------------------------------
+uploaded_file = st.file_uploader("Upload a flower image...", type=["jpg", "jpeg", "png"])
+
 if uploaded_file is not None:
-    image = Image.open(uploaded_file)
-    st.image(image, caption="Uploaded Image", use_column_width=True)
+    st.image(uploaded_file, caption="Uploaded Image", use_container_width=True)
+    st.write("Classifying...")
+    
+    # Predict
+    predicted_class, confidence = predict_image(uploaded_file, model)
+    
+    # Display Results
+    st.success(f"🌼 **Predicted Flower:** {predicted_class}")
+    st.info(f"💪 **Confidence:** {confidence:.2f}%")
+")  # your saved Keras model
+    return model
 
-    score = predict_image(image, model)
+model = load_flower_model()
 
-    st.subheader("🌸 Prediction Result:")
-    st.write(f"**Predicted flower:** {CLASS_NAMES[np.argmax(score)]}")
-    st.write(f"**Confidence:** {100 * np.max(score):.2f}%")
+# -------------------------------
+# 3. Define Class Names
+# -------------------------------
+CLASS_NAMES = ['Daisy', 'Dandelion', 'Rose', 'Sunflower', 'Tulip']
 
-st.markdown("---")
-st.caption("Powered by Streamlit + TensorFlow • © 2025 Flower Vision AI")
+# -------------------------------
+# 4. Prediction Function
+# -------------------------------
+def predict_image(image_file, model):
+    # Load the image with correct target size
+    img = Image.open(image_file).convert("RGB")
+    img = img.resize((224, 224))  # <-- resize to match your model input
+    img_array = image.img_to_array(img)
+    img_array = np.expand_dims(img_array, axis=0)  # Add batch dimension
+    img_array = img_array / 255.0  # Normalize
 
+    # Make prediction
+    predictions = model.predict(img_array)
+    score = tf.nn.softmax(predictions[0])
+    predicted_class = CLASS_NAMES[np.argmax(score)]
+    confidence = 100 * np.max(score)
+    return predicted_class, confidence
+
+# -------------------------------
+# 5. Streamlit File Uploader
+# -------------------------------
+uploaded_file = st.file_uploader("Upload a flower image...", type=["jpg", "jpeg", "png"])
+
+if uploaded_file is not None:
+    st.image(uploaded_file, caption="Uploaded Image", use_container_width=True)
+    st.write("Classifying...")
+    
+    # Predict
+    predicted_class, confidence = predict_image(uploaded_file, model)
+    
+    # Display Results
+    st.success(f"🌼 **Predicted Flower:** {predicted_class}")
+    st.info(f"💪 **Confidence:** {confidence:.2f}%")
+")  # your saved Keras model
+    return model
+
+model = load_flower_model()
+
+# -------------------------------
+# 3. Define Class Names
+# -------------------------------
+CLASS_NAMES = ['Daisy', 'Dandelion', 'Rose', 'Sunflower', 'Tulip']
+
+# -------------------------------
+# 4. Prediction Function
+# -------------------------------
+def predict_image(image_file, model):
+    # Load the image with correct target size
+    img = Image.open(image_file).convert("RGB")
+    img = img.resize((224, 224))  # <-- resize to match your model input
+    img_array = image.img_to_array(img)
+    img_array = np.expand_dims(img_array, axis=0)  # Add batch dimension
+    img_array = img_array / 255.0  # Normalize
+
+    # Make prediction
+    predictions = model.predict(img_array)
+    score = tf.nn.softmax(predictions[0])
+    predicted_class = CLASS_NAMES[np.argmax(score)]
+    confidence = 100 * np.max(score)
+    return predicted_class, confidence
+
+# -------------------------------
+# 5. Streamlit File Uploader
+# -------------------------------
+uploaded_file = st.file_uploader("Upload a flower image...", type=["jpg", "jpeg", "png"])
+
+if uploaded_file is not None:
+    st.image(uploaded_file, caption="Uploaded Image", use_container_width=True)
+    st.write("Classifying...")
+    
+    # Predict
+    predicted_class, confidence = predict_image(uploaded_file, model)
+    
+    # Display Results
+    st.success(f"🌼 **Predicted Flower:** {predicted_class}")
+    st.info(f"💪 **Confidence:** {confidence:.2f}%")
