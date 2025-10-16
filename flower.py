@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import streamlit as st
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.image import img_to_array
@@ -36,6 +35,7 @@ if uploaded_file is not None:
 
     # Show result
     st.success(f"🌼 Predicted: **{predicted_class.capitalize()}** ({confidence:.2f}% confidence)")
+
 =======
 import streamlit as st
 from tensorflow.keras.models import load_model
@@ -74,4 +74,4 @@ if uploaded_file is not None:
 
     # Show result
     st.success(f"🌼 Predicted: **{predicted_class.capitalize()}** ({confidence:.2f}% confidence)")
->>>>>>> 5bfd965 (Initial commit)
+
