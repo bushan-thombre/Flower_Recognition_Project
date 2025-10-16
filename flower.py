@@ -17,7 +17,7 @@ st.write("Upload a flower image and let the model predict the type!")
 # -------------------------------
 @st.cache_resource
 def load_flower_model():
-    model = load_model("model.h5")  # your saved Keras model
+    model = load_model("my_model.Keras")  # your saved Keras model
     return model
 
 model = load_flower_model()
@@ -60,3 +60,4 @@ if uploaded_file is not None:
     # Display Results
     st.success(f"🌼 **Predicted Flower:** {predicted_class}")
     st.info(f"💪 **Confidence:** {confidence:.2f}%")
+
