@@ -59,6 +59,7 @@ if uploaded_file is not None:
     
     # Display Results
     st.success(f"🌼 **Predicted Flower:** {predicted_class}")
-    st.info(f"💪 **Confidence:** {confidence:.2f}%")
+    
+
 
 
